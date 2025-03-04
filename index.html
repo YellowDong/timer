@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>优雅计时器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f5f5f7;
+        }
+
+        .timer-container {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 20px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+            text-align: center;
+            width: 90%;
+            max-width: 400px;
+            transition: transform 0.2s ease;
+        }
+
+        .timer-container:hover {
+            transform: translateY(-2px);
+        }
+
+        .display {
+            font-size: 4.5rem;
+            font-weight: 300;
+            color: #1d1d1f;
+            margin: 1rem 0;
+            font-variant-numeric: tabular-nums;
+            letter-spacing: 2px;
+            font-feature-settings: "tnum";
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+
+        button {
+            padding: 0.8rem 1.8rem;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 120px;
+            font-weight: 500;
+        }
+
+        button:active {
+            transform: scale(0.96);
+        }
+
+        #startBtn {
+            background-color: #007AFF;
+            color: white;
+        }
+
+        #startBtn:hover {
+            background-color: #0066CC;
+        }
+
+        #resetBtn {
+            background-color: #ff3b30;
+            color: white;
+        }
+
+        #resetBtn:hover {
+            background-color: #d63029;
+        }
+
+        .paused {
+            background-color: #34C759 !important;
+        }
+
+        .paused:hover {
+            background-color: #248A3D !important;
+        }
+
+        @media (max-width: 480px) {
+            .timer-container {
+                padding: 2rem;
+            }
+            
+            .display {
+                font-size: 3.5rem;
+            }
+
+            button {
+                padding: 0.7rem 1.4rem;
+                font-size: 1rem;
+                min-width: 100px;
+            }
+        }
+
+        @media (prefers-color-scheme: dark) {
+            body {
+                background-color: #1c1c1e;
+            }
+
+            .timer-container {
+                background: #2c2c2e;
+            }
+
+            .display {
+                color: #ffffff;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="timer-container">
+        <div class="display" id="display">00:00:00</div>
+        <div class="controls">
+            <button id="startBtn">开始</button>
+            <button id="resetBtn">重置</button>
+        </div>
+    </div>
+
+    <script>
+        // 获取DOM元素
+        const display = document.getElementById('display');
+        const startBtn = document.getElementById('startBtn');
+        const resetBtn = document.getElementById('resetBtn');
+
+        // 计时器变量
+        let startTime = 0;
+        let elapsedTime = 0;
+        let timerInterval = null;
+        let isRunning = false;
+
+        // 格式化时间显示
+        function formatTime(ms) {
+            const hours = Math.floor(ms / 3600000);
+            const minutes = Math.floor((ms % 3600000) / 60000);
+            const seconds = Math.floor((ms % 60000) / 1000);
+            
+            return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+
+        // 更新显示
+        function updateDisplay() {
+            const currentTime = Date.now();
+            elapsedTime = startTime ? currentTime - startTime : 0;
+            display.textContent = formatTime(elapsedTime);
+        }
+
+        // 开始/暂停计时器
+        startBtn.addEventListener('click', () => {
+            if (!isRunning) {
+                // 开始计时
+                if (!startTime) {
+                    startTime = Date.now();
+                } else {
+                    startTime = Date.now() - elapsedTime;
+                }
+                timerInterval = setInterval(updateDisplay, 10);
+                startBtn.textContent = '暂停';
+                startBtn.classList.add('paused');
+            } else {
+                // 暂停计时
+                clearInterval(timerInterval);
+                startBtn.textContent = '继续';
+                startBtn.classList.remove('paused');
+            }
+            isRunning = !isRunning;
+        });
+
+        // 重置计时器
+        resetBtn.addEventListener('click', () => {
+            clearInterval(timerInterval);
+            startTime = 0;
+            elapsedTime = 0;
+            isRunning = false;
+            display.textContent = '00:00:00';
+            startBtn.textContent = '开始';
+            startBtn.classList.remove('paused');
+        });
+    </script>
+</body>
+</html>
